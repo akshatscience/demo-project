@@ -624,7 +624,7 @@ recovery_client = RecoveryServicesClient(credential, subscription_id)
 backup_client = RecoveryServicesBackupClient(credential, subscription_id)
 
 # Azure DevOps configuration
-pat = "EvfWWBmfcFUC3wFxKUDaihqc4ZdE8iJ8xijvhK0uR9aJ3ELYPPoGJQQJ99BDACAAAAAAAAAAAAASAZDO1aJf"  # Replace with your Azure DevOps PAT
+pat = "CWCvABUofooLznHdjEvH7OhxsLaGBdOh4orf5pYvyl633pH2y35TJQQJ99BDACAAAAAAAAAAAAASAZDO1bLw"  # Replace with your Azure DevOps PAT
 encoded_pat = base64.b64encode(f':{pat}'.encode()).decode()
 
 organization_name = "1Azure-Dashboard"  # Replace with your Azure DevOps Organization name
@@ -636,7 +636,7 @@ def trigger_pipeline_logic(pipeline_variables):
     organization = "1Azure-Dashboard"  # Replace with your Azure DevOps organization name
     project = "Azure-Dashboard"  # Replace with your Azure DevOps project name
     pipeline_id = "1"  # Replace with your actual pipeline definition ID
-    devops_url = f'https://dev.azure.com/{organization}/{project}/_apis/pipelines/{pipeline_id}/runs?api-version=6.0-preview.1'
+    devops_url = f'https://dev.azure.com/{organization}/{project}/_apis/pipelines/{pipeline_id}/runs?api-version=7.0'
 
     # Headers for Azure DevOps authentication (replace with your personal access token)
     headers = {
@@ -648,8 +648,21 @@ def trigger_pipeline_logic(pipeline_variables):
     print(f"Payload to trigger pipeline: {pipeline_variables}")
 
     # Payload to trigger the pipeline (passing pipeline variables)
+    template_parameters = {
+        key: str(value).lower() if isinstance(value, bool) else str(value)
+        for key, value in pipeline_variables.items()
+    }
+
+    # Final payload with ref and parameters
     payload = {
-        "variables": pipeline_variables
+        "resources": {
+            "repositories": {
+                "self": {
+                    "refName": "refs/heads/main"  # Replace with your default branch name if different
+                }
+            }
+        },
+        "templateParameters": template_parameters
     }
 
     # Trigger the pipeline using a POST request
